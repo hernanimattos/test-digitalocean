@@ -1,22 +1,40 @@
-name:  Build & Deploy
+name: Build & Deploy
 on:
-  push: 
+  push:
     branches: [main]
-    
+
+defaults:
+  run:
+    working-directory: ./app
+
 jobs:
-  deploy: 
+  deploy:
     runs-on: ubuntu-latest
-    steps: 
+    defaults:
+      run:
+        working-directory: ./app
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+    steps:
+      - uses: actions/checkout@v3
+      - name: install and build - Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run build
       - name: Deploy teste
         uses: appleboy/ssh-action@v0.1.2
         with:
           host: ${{secrets.SHH_HOST}}
           key: ${{secrets.SSH_KEY}}
           username: ${{secrets.SSH_USERNAME}}
-          
+
           script: |
             mkdir test
+            mv dist ./test
             cd test
-            git clone https://github.com/hernanimattos/test-digitalocean.git
+            mv -v dist/* .
             echo "Deu Certo"
-    
