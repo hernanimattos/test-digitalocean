@@ -28,6 +28,7 @@ jobs:
 
       - name: Zip Dist
         run: |
+          pwd
           cd ./dist
           echo "Compressing files"
           ls -a
