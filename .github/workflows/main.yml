@@ -29,8 +29,7 @@ jobs:
         run: |
           ls -a
           cd dist
-          ls -a
-          zip -qq -r -T ../../teste-zip.zip *
+          zip -qq -r -T ../teste-zip.zip *
 
       - name: Save Build Artifact
         uses: actions/upload-artifact@v2
