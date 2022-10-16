@@ -3,16 +3,12 @@ on:
   push:
     branches: [main]
 
-defaults:
-  run:
-    working-directory: ./app
-
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: app
+        working-directory: client
 
     strategy:
       matrix:
@@ -23,18 +19,73 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm ci
-      - run: npm run build
-      - name: Deploy teste
-        uses: appleboy/ssh-action@v0.1.2
+      - run: |
+          npm ci
+          npm run build
+
+      - name: Install Zip
+        uses: montudor/action-zip@v0.1.1
+
+      - name: Zip Dist
+        run: |
+          cd ./dist
+          echo "Compressing files"
+          ls -a
+          zip -qq -r -T ../../teste-zip.zip *
+
+      - name: Save Build Artifact
+        uses: actions/upload-artifact@v2
         with:
-          host: ${{secrets.SHH_HOST}}
-          key: ${{secrets.SSH_KEY}}
-          username: ${{secrets.SSH_USERNAME}}
+          name: teste-zip.zip
+          path: teste-zip.zip
+          if-no-files-found: error
+
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      # Baixa o artefato que teve upload no passo de build
+      - uses: actions/download-artifact@v2
+        with:
+          name: teste-zip.zip
+
+      - name: Upload Artifact
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SHH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+
+          overwrite: true
+          source: "teste-zip.zip"
+          target: "~/artifacts"
+
+      - name: Unzip Artifact
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
 
           script: |
-            mkdir test
-            mv dist ./test
-            cd test
-            mv -v dist/* .
-            echo "Deu Certo"
+            unzip -o ~/artifacts/teste-zip.zip -d /var/www/html/api/
+
+      # - name: Deploy teste
+      #   uses: appleboy/ssh-action@v0.1.2
+      #   with:
+      #     host: ${{secrets.SHH_HOST}}
+      #     key: ${{secrets.SSH_KEY}}
+      #     username: ${{secrets.SSH_USERNAME}}
+
+      #     script: |
+      #       mkdir test
+      #       mv dist ./test
+      #       cd test
+      #       mv -v dist/* .
+      #       echo "Deu Certo"
+
+      #       https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
