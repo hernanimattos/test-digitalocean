@@ -26,7 +26,7 @@ jobs:
         uses: montudor/action-zip@v0.1.1
 
       - name: Zip Dist
-      - run: |
+        run: |
           ls -a
           echo "lista files"
           cd ~/dist
