@@ -28,9 +28,9 @@ jobs:
       - name: Zip Dist
         run: |
           ls -a
-          echo "lista files"
+          # echo "lista files"
           cd ~/dist
-          echo "Compressing files"
+          # echo "Compressing files"
           ls -a
           zip -qq -r -T ../../teste-zip.zip *
 
