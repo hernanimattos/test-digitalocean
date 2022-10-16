@@ -19,15 +19,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - run: |
-          npm ci
-          npm run build
+      - run: npm ci
+      - run: npm run build
 
       - name: Install Zip
         uses: montudor/action-zip@v0.1.1
 
       - name: Zip Dist
-        run: |
+      - run: |
           ls -a
           echo "lista files"
           cd ~/dist
