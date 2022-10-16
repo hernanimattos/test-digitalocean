@@ -28,6 +28,8 @@ jobs:
 
       - name: Zip Dist
         run: |
+          ls -a
+          echo "lista files"
           cd ~/dist
           echo "Compressing files"
           ls -a
